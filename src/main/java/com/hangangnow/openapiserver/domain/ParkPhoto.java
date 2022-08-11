@@ -26,9 +26,9 @@ public class ParkPhoto extends Photo {
     private String imageNumber;
 
 
-    public ParkPhoto(String url, String imageNumber, LocalDateTime lastModifiedTime){
-        this.url = url;
+    public ParkPhoto(String imageNumber, String url, LocalDateTime lastModifiedTime){
         this.imageNumber = imageNumber;
+        this.url = url;
         this.lastModifiedTime = lastModifiedTime;
     }
 

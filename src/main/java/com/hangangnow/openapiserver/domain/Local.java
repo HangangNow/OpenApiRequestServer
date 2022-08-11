@@ -2,12 +2,14 @@ package com.hangangnow.openapiserver.domain;
 
 import lombok.Getter;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
 @Getter
 public class Local {
 
+    @Column(name = "localname")
     private String localName;
     private Double x_pos;
     private Double y_pos;

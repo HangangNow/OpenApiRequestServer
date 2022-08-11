@@ -9,12 +9,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ParkingRequestDto {
 
-    private Long parkId;
+    private String contentId;
     private String parkName;
 
     private String si;
     private String gu;
-    private String gil;
     private String detail;
 
     private String parkingName;

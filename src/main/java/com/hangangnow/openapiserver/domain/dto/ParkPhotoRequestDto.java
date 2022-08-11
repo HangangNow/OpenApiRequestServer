@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ParkPhotoRequestDto {
-    private Long parkId;
+    private String contentId;
     private HashMap<String, String> hashMap = new HashMap<>();
 }

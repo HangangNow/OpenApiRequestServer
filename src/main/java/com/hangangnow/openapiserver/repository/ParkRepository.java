@@ -17,8 +17,10 @@ public class ParkRepository {
         em.persist(park);
     }
 
-    public Park findById(Long id){
-        return em.find(Park.class, id);
+    public Park findByContentId(String contentId){
+        return em.createQuery("select p from Park p where p.contentId =:contentId", Park.class)
+                .setParameter("contentId", contentId)
+                .getSingleResult();
     }
 
     public List<Park> findAll(){

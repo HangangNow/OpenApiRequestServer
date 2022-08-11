@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.sql.Array;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +14,12 @@ import java.util.List;
 public class Park {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "park_id")
     private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String contentId;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -37,8 +40,8 @@ public class Park {
 
     private LocalDateTime lastModifiedTime;
 
-    public Park(Long id, String name, Local local, Address address, String content, LocalDateTime lastModifiedTime) {
-        this.id = id;
+    public Park(String contentId, String name, Local local, Address address, String content, LocalDateTime lastModifiedTime) {
+        this.contentId = contentId;
         this.name = name;
         this.local = local;
         this.address = address;

@@ -11,11 +11,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ParkRequestDto {
 
-    private Long parkId;
+    private String contentId;
     private String parkName;
     private String si;
     private String gu;
-    private String gil;
     private String detail;
     private Double x_pos;
     private Double y_pos;
