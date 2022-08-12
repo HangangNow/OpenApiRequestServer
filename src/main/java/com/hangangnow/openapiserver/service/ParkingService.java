@@ -33,7 +33,7 @@ public class ParkingService {
     private final ParkRepository parkRepository;
     private final ParkingRepository parkingRepository;
 
-    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0/10 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestParking() throws IOException {
         log.info("한강공원 주차장 크롤러 동작.");
@@ -94,9 +94,14 @@ public class ParkingService {
     public void updateParkingInfo(List<ParkingRequestDto> parkingRequestDtos){
         for (ParkingRequestDto parkingRequestDto : parkingRequestDtos) {
             Parking findParking = parkingRepository.findByName(parkingRequestDto.getParkingName());
+
+            // 난지 주차장 홈페이지 오류 -> 전체 약 1020대
+            if (findParking.getId() == 23L){
+                parkingRequestDto.setTotalCount(1020);
+            }
+
             Address address = new Address(parkingRequestDto.getSi(), parkingRequestDto.getGu(), parkingRequestDto.getDetail());
-            Local local = new Local(parkingRequestDto.getParkingName(), null, null);
-            findParking.updateParking(parkingRequestDto.getParkingName(), address, local, parkingRequestDto.getTotalCount(), parkingRequestDto.getAvailableCount(), LocalDateTime.now());
+            findParking.updateParking(parkingRequestDto.getParkingName(), address, parkingRequestDto.getTotalCount(), parkingRequestDto.getAvailableCount(), LocalDateTime.now());
         }
     }
 }

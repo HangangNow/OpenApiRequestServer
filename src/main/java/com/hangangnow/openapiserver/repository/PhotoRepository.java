@@ -24,4 +24,10 @@ public class PhotoRepository {
 
     }
 
+
+    public void deleteAll(){
+        em.createQuery("delete from ParkPhoto")
+                .executeUpdate();
+    }
+
 }

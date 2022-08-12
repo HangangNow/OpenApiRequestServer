@@ -18,16 +18,14 @@ public class ParkController {
 
     private final ParkService parkService;
 
-
-    @GetMapping("/api/v1/park/detailCommon")
+    @GetMapping("/api/v1/parks/detailCommon")
     public ResponseEntity<String> commonInfoApi() throws IOException, JDOMException {
         parkService.requestPark();
         return new ResponseEntity<>("한국관광공사_국문 관광정보 서비스 공통정보조회 API 호출", HttpStatus.OK);
     }
 
 
-
-    @GetMapping("/api/v1/park/detailImage")
+    @GetMapping("/api/v1/parks/detailImage")
     public ResponseEntity<String> imageInfoApi() throws IOException, JDOMException {
         parkService.requestParkImage();
         return new ResponseEntity<>("한국관광공사_국문 관광정보 서비스 이미지 정보조회 API 호출", HttpStatus.OK);

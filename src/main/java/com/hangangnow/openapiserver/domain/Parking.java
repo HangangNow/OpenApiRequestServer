@@ -49,10 +49,9 @@ public class Parking {
     }
 
 
-    public void updateParking(String name, Address address, Local local, int total_count, int available_count, LocalDateTime lastModifiedTime){
+    public void updateParking(String name, Address address, int total_count, int available_count, LocalDateTime lastModifiedTime){
         this.name = name;
         this.address = address;
-        this.local = local;
         this.total_count = total_count;
         this.available_count = available_count;
         this.lastModifiedTime = lastModifiedTime;
