@@ -1,6 +1,5 @@
 package com.hangangnow.openapiserver.repository;
 
-import com.hangangnow.openapiserver.domain.hangangnow.Dust;
 import com.hangangnow.openapiserver.domain.hangangnow.HangangNowData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
