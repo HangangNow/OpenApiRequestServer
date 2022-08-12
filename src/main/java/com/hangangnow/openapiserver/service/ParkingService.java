@@ -33,7 +33,7 @@ public class ParkingService {
     private final ParkRepository parkRepository;
     private final ParkingRepository parkingRepository;
 
-    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestParking() throws IOException {
         log.info("한강공원 주차장 크롤러 동작.");

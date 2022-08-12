@@ -45,7 +45,7 @@ public class ParkService {
     private final ParkRepository parkRepository;
     private final PhotoRepository photoRepository;
 
-    @Scheduled(cron = "0 0/2 * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0/2 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestPark()  throws IOException, JDOMException {
         LocalDateTime now = LocalDateTime.now();
@@ -140,7 +140,7 @@ public class ParkService {
         }
     }
 
-    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
+//    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestParkImage() throws IOException, JDOMException {
         LocalDateTime now = LocalDateTime.now();
