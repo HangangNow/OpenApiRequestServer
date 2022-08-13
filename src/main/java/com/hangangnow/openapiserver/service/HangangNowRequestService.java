@@ -1,7 +1,7 @@
 package com.hangangnow.openapiserver.service;
 
 import com.hangangnow.openapiserver.domain.hangangnow.Dust;
-import com.hangangnow.openapiserver.domain.hangangnow.SunRiseSunSet;
+import com.hangangnow.openapiserver.domain.hangangnow.SunMoonRiseSet;
 import com.hangangnow.openapiserver.domain.hangangnow.Weather;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,6 +119,8 @@ public class HangangNowRequestService {
         StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + dustApiKey); /*Service Key*/
         urlBuilder.append("&" + URLEncoder.encode("returnType","UTF-8") + "=" + URLEncoder.encode("json", "UTF-8")); /*xml 또는 json*/
+        urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")); /*한 페이지 결과 수(조회 날짜로 검색 시 사용 안함)*/
+        urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지번호(조회 날짜로 검색 시 사용 안함)*/
         urlBuilder.append("&" + URLEncoder.encode("sidoName","UTF-8") + "=" + URLEncoder.encode("서울", "UTF-8")); /*시도 이름(전국, 서울, 부산, 대구, 인천, 광주, 대전, 울산, 경기, 강원, 충북, 충남, 전북, 전남, 경북, 경남, 제주, 세종)*/
         urlBuilder.append("&" + URLEncoder.encode("ver","UTF-8") + "=" + URLEncoder.encode("1.1", "UTF-8")); /*버전별 상세 결과 참고*/
         URL url = new URL(urlBuilder.toString());
@@ -150,6 +152,7 @@ public class HangangNowRequestService {
         List<JSONObject> itemList = items;
         Dust dust = null;
         for (JSONObject jsonObject : itemList) {
+            System.out.println("jsonObject.get(\"stationName\").toString() = " + jsonObject.get("stationName").toString());
             if(jsonObject.get("stationName").toString().equals("용산구")){
                 dust = new Dust(Integer.parseInt(jsonObject.get("pm25Grade").toString()),
                         Integer.parseInt(jsonObject.get("pm10Grade").toString()));
@@ -164,14 +167,10 @@ public class HangangNowRequestService {
         return Optional.ofNullable(dust);
     }
 
-    public SunRiseSunSet requestSunRiseSunSet(LocalDate localDate) throws IOException, JDOMException {
-        SunRiseSunSet sunRiseSunSet = requestDateSunRiseSunSet(localDate.format(DateTimeFormatter.BASIC_ISO_DATE));
-        localDate = localDate.plusDays(1L);
-        sunRiseSunSet.updateTomorrowSunRise(requestDateSunRiseSunSet(localDate.format(DateTimeFormatter.BASIC_ISO_DATE)).getTodaySunRise());
-        return sunRiseSunSet;
-    }
+    public SunMoonRiseSet requestSunMoonRiseSet() throws IOException, JDOMException {
+        LocalDate currentDate = LocalDate.now();
+        String date = currentDate.format(DateTimeFormatter.BASIC_ISO_DATE);
 
-    public SunRiseSunSet requestDateSunRiseSunSet(String date) throws IOException, JDOMException {
         StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B090041/openapi/service/RiseSetInfoService/getAreaRiseSetInfo"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + riseSetApiKey); /*Service Key*/
         urlBuilder.append("&" + URLEncoder.encode("locdate","UTF-8") + "=" + URLEncoder.encode(date, "UTF-8")); /*날짜*/
@@ -193,13 +192,16 @@ public class HangangNowRequestService {
 
         String sunRise = item.get(0).getChild("sunrise").getText().strip();
         String sunSet = item.get(0).getChild("sunset").getText().strip();
+        String moonRise = item.get(0).getChild("moonrise").getText().strip();
         sunRise = sunRise.substring(0,2) + ":" + sunRise.substring(2);
         sunSet = sunSet.substring(0,2) + ":" + sunSet.substring(2);
+        moonRise = moonRise.substring(0,2) + ":" + moonRise.substring(2);
 
-        System.out.println("Date: " + date+ " sunrise: " + sunRise + " sunset: " + sunSet);
+
+        System.out.println("Date: " + date+ " sunrise: " + sunRise + " sunset: " + sunSet + " moonRise: " + moonRise);
 
         conn.disconnect();
-        return new SunRiseSunSet(sunRise, sunSet);
+        return new SunMoonRiseSet(sunRise, sunSet, moonRise);
     }
 
     public Optional<Double> requestTemperature() throws IOException, ParseException{

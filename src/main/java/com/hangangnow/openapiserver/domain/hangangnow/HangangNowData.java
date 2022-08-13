@@ -24,7 +24,7 @@ public class HangangNowData {
     @Embedded
     private Dust dust;
     @Embedded
-    private SunRiseSunSet sunRiseSunSet;
+    private SunMoonRiseSet sunMoonRiseSet;
 
     public void update(Double temperature){
         this.temperature = temperature;
@@ -41,8 +41,8 @@ public class HangangNowData {
         this.lastModifiedTime = LocalDateTime.now();
     }
 
-    public void update(SunRiseSunSet sunRiseSunSet){
-        this.sunRiseSunSet = sunRiseSunSet;
+    public void update(SunMoonRiseSet sunMoonRiseSet){
+        this.sunMoonRiseSet = sunMoonRiseSet;
         this.lastModifiedTime = LocalDateTime.now();
     }
 }

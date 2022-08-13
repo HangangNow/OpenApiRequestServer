@@ -2,7 +2,7 @@ package com.hangangnow.openapiserver.controller;
 
 import com.hangangnow.openapiserver.domain.hangangnow.Dust;
 import com.hangangnow.openapiserver.domain.hangangnow.HangangNowData;
-import com.hangangnow.openapiserver.domain.hangangnow.SunRiseSunSet;
+import com.hangangnow.openapiserver.domain.hangangnow.SunMoonRiseSet;
 import com.hangangnow.openapiserver.domain.hangangnow.Weather;
 import com.hangangnow.openapiserver.service.HangangNowService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,9 +38,9 @@ public class HangangNowController {
         return hangangNowService.updateDust();
     }
 
-    @PutMapping("/sunrisesunset")
-    public SunRiseSunSet CallApiSunRiseSunSet() throws IOException, JDOMException {
-        return hangangNowService.updateSunRiseSunSet();
+    @PutMapping("/riseset")
+    public SunMoonRiseSet CallApiSunRiseSunSet() throws IOException, JDOMException {
+        return hangangNowService.updateSunMoonRiseSet();
     }
 
     @PutMapping("/temperature")
