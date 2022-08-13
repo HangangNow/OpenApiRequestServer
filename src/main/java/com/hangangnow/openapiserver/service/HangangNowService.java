@@ -8,6 +8,7 @@ import com.hangangnow.openapiserver.repository.HangangNowRepository;
 import lombok.RequiredArgsConstructor;
 import org.jdom2.JDOMException;
 import org.json.simple.parser.ParseException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +51,7 @@ public class HangangNowService {
         return initHangangNowData;
     }
 
+    @Scheduled(cron = "0 10 23 * * *", zone = "Asia/Seoul")
     public Weather updateWeather() throws IOException, ParseException {
         HangangNowData hangangNowData = hangangNowRepository.findHangangNowData()
                 .orElseThrow(() -> new NullPointerException("Failed: Not found hangangNow Data"));
@@ -58,6 +60,7 @@ public class HangangNowService {
         return weather;
     }
 
+    @Scheduled(cron = "0 3/10 * * * *", zone = "Asia/Seoul")
     public Double updateTemperature() throws IOException, ParseException {
         HangangNowData hangangNowData = hangangNowRepository.findHangangNowData()
                 .orElseThrow(() -> new NullPointerException("Failed: Not found hangangNow Data"));
@@ -68,6 +71,7 @@ public class HangangNowService {
         return temperature;
     }
 
+    @Scheduled(cron = "0 0 0/3 * * *", zone = "Asia/Seoul")
     public Dust updateDust() throws IOException, ParseException {
         HangangNowData hangangNowData = hangangNowRepository.findHangangNowData()
                 .orElseThrow(() -> new NullPointerException("Failed: Not found hangangNow Data"));
@@ -78,11 +82,13 @@ public class HangangNowService {
         return dust;
     }
 
-    public SunRiseSunSet updateSunRiseSunSet(LocalDate localDate) throws IOException, JDOMException {
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+    public SunRiseSunSet updateSunRiseSunSet() throws IOException, JDOMException {
+        LocalDate currentDate = LocalDate.now();
         HangangNowData hangangNowData
                 = hangangNowRepository.findHangangNowData()
                 .orElseThrow(() -> new NullPointerException("Failed: Not found hangangNow Data"));
-        SunRiseSunSet sunRiseSunSet = HNRS.requestSunRiseSunSet(localDate);
+        SunRiseSunSet sunRiseSunSet = HNRS.requestSunRiseSunSet(currentDate);
         hangangNowData.update(sunRiseSunSet);
         return sunRiseSunSet;
     }

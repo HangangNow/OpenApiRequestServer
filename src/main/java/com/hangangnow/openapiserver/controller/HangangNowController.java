@@ -41,7 +41,7 @@ public class HangangNowController {
 
     @PutMapping("/sunrisesunset")
     public SunRiseSunSet CallApiSunRiseSunSet() throws IOException, JDOMException {
-        return hangangNowService.updateSunRiseSunSet(LocalDate.now());
+        return hangangNowService.updateSunRiseSunSet();
     }
 
     @PutMapping("/temperature")
