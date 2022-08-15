@@ -13,6 +13,7 @@ public class Parking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "parking_id")
     private Long id;
 
     @ManyToOne
