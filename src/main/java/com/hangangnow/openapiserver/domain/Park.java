@@ -30,6 +30,14 @@ public class Park {
     @Embedded
     private Address address;
 
+    private String callNumber;
+
+    private String facilities;
+
+    private String funItems;
+
+    private String summary;
+
     private String content;
 
     @OneToMany(mappedBy = "park", cascade = CascadeType.ALL, orphanRemoval = true)
