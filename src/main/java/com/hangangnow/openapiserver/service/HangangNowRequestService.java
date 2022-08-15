@@ -1,8 +1,10 @@
-package com.hangangnow.openapiserver.controller;
+package com.hangangnow.openapiserver.service;
 
 import com.hangangnow.openapiserver.domain.hangangnow.Dust;
-import com.hangangnow.openapiserver.domain.hangangnow.SunRiseSunSet;
+import com.hangangnow.openapiserver.domain.hangangnow.SunMoonRiseSet;
 import com.hangangnow.openapiserver.domain.hangangnow.Weather;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -13,8 +15,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,11 +27,17 @@ import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-@RestController
+@Slf4j
+@Service
+@RequiredArgsConstructor
+@Transactional
 @PropertySource("classpath:/application-secret.properties")
-public class WeatherController {
+public class HangangNowRequestService {
 
     @Value("${tourWeatherApiKey}")
     private String tourWeatherApiKey;
@@ -40,25 +48,24 @@ public class WeatherController {
     @Value("${weatherApiKey}")
     private String weatherApiKey;
 
-    @GetMapping("/api/v1/weather")
-    public Weather test() throws IOException, ParseException {
-        StringBuilder sb = new StringBuilder("http://apis.data.go.kr/1360000/TourStnInfoService/getTourStnVilageFcst");
+    public Weather requestWeather() throws IOException, ParseException {
+        StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/1360000/TourStnInfoService/getTourStnVilageFcst");
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHH"));
         String Courese_Id = "58";
 
-        sb.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + tourWeatherApiKey);
-        sb.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
-        sb.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8"));
-        sb.append("&" + URLEncoder.encode("dataType", "UTF-8") + "=" + URLEncoder.encode("JSON", "UTF-8"));
-        sb.append("&" + URLEncoder.encode("CURRENT_DATE", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8"));
-        sb.append("&" + URLEncoder.encode("HOUR", "UTF-8") + "=" + URLEncoder.encode("0", "UTF-8"));
-        sb.append("&" + URLEncoder.encode("COURSE_ID", "UTF-8") + "=" + URLEncoder.encode(Courese_Id, "UTF-8"));
-        URL url = new URL(sb.toString());
+        urlBuilder.append("?" + URLEncoder.encode("serviceKey", "UTF-8") + "=" + tourWeatherApiKey);
+        urlBuilder.append("&" + URLEncoder.encode("pageNo", "UTF-8") + "=" + URLEncoder.encode("1", "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("numOfRows", "UTF-8") + "=" + URLEncoder.encode("100", "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("dataType", "UTF-8") + "=" + URLEncoder.encode("JSON", "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("CURRENT_DATE", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("HOUR", "UTF-8") + "=" + URLEncoder.encode("0", "UTF-8"));
+        urlBuilder.append("&" + URLEncoder.encode("COURSE_ID", "UTF-8") + "=" + URLEncoder.encode(Courese_Id, "UTF-8"));
+        URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-
-        System.out.println("conn code = " + conn.getResponseCode());
+        log.info("기상청_관광코스별 관광지 상세 날씨 조회서비스 API");
+        log.info("Response code: " + conn.getResponseCode());
 
         BufferedReader rd;
         if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
@@ -66,17 +73,17 @@ public class WeatherController {
         } else {
             rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
         }
-        StringBuilder sb2 = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         String line;
         while ((line = rd.readLine()) != null) {
             System.out.println(line);
-            sb2.append(line);
+            sb.append(line);
         }
         rd.close();
         conn.disconnect();
-        System.out.println(sb.toString());
+//        System.out.println(sb.toString());
 
-        JSONObject result = (JSONObject) new JSONParser().parse(sb2.toString());
+        JSONObject result = (JSONObject) new JSONParser().parse(sb.toString());
         JSONObject response = (JSONObject) result.get("response");
         JSONObject body = (JSONObject) response.get("body");
         JSONObject items = (JSONObject) body.get("items");
@@ -88,39 +95,41 @@ public class WeatherController {
 
         for (JSONObject jsonObject : itemList) {
             if(jsonObject.get("spotAreaId").toString().equals("5803")){
-                StringBuilder out = new StringBuilder();
-                out.append("온도 : "+jsonObject.get("th3")+" ");
-                out.append("시각 : "+jsonObject.get("tm")+" ");
-                out.append("하늘 : " +jsonObject.get("sky")+" "); // 1: 맑음, 2: 구름, 3: 흐림, 4: 비, 5: 소나기, 6: 비눈, 7: 눈비, 8: 눈
-                out.append("습도 : " +jsonObject.get("rhm")+" ");
-                out.append("강수확률 : " +jsonObject.get("pop")+"\n");
+//                StringBuilder out = new StringBuilder();
+//                out.append("온도 : "+jsonObject.get("th3")+" ");
+//                out.append("시각 : "+jsonObject.get("tm")+" ");
+//                out.append("하늘 : " +jsonObject.get("sky")+" "); // 1: 맑음, 2: 구름, 3: 흐림, 4: 비, 5: 소나기, 6: 비눈, 7: 눈비, 8: 눈
+//                out.append("습도 : " +jsonObject.get("rhm")+" ");
+//                out.append("강수확률 : " +jsonObject.get("pop")+"\n");
+//                System.out.println(out);
                 Integer skyIdx = Integer.parseInt(jsonObject.get("sky").toString());
                 Integer skyVal = skyList.get(skyIdx);
                 skyList.set(skyIdx, skyVal+1);
                 if(Integer.parseInt(jsonObject.get("pop").toString()) > maxPop){
                     maxPop = Integer.parseInt(jsonObject.get("pop").toString());
                 }
-                System.out.println(out);
             }
         }
-        System.out.println("maxPop: " + maxPop);
-        System.out.println("maxSky: " + skyList.indexOf(Collections.max(skyList)));
+        System.out.println("max 강수확률: " + maxPop + " 하늘상태 최빈값: " + skyList.indexOf(Collections.max(skyList)));
 
         return new Weather(skyList.indexOf(Collections.max(skyList)), maxPop);
     }
 
-    @GetMapping("/api/v1/dust")
-    public Optional<Dust> dustTest() throws IOException, ParseException {
+    public Optional<Dust> requestDust() throws IOException, ParseException {
         StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + dustApiKey); /*Service Key*/
         urlBuilder.append("&" + URLEncoder.encode("returnType","UTF-8") + "=" + URLEncoder.encode("json", "UTF-8")); /*xml 또는 json*/
+        urlBuilder.append("&" + URLEncoder.encode("numOfRows","UTF-8") + "=" + URLEncoder.encode("100", "UTF-8")); /*한 페이지 결과 수(조회 날짜로 검색 시 사용 안함)*/
+        urlBuilder.append("&" + URLEncoder.encode("pageNo","UTF-8") + "=" + URLEncoder.encode("1", "UTF-8")); /*페이지번호(조회 날짜로 검색 시 사용 안함)*/
         urlBuilder.append("&" + URLEncoder.encode("sidoName","UTF-8") + "=" + URLEncoder.encode("서울", "UTF-8")); /*시도 이름(전국, 서울, 부산, 대구, 인천, 광주, 대전, 울산, 경기, 강원, 충북, 충남, 전북, 전남, 경북, 경남, 제주, 세종)*/
         urlBuilder.append("&" + URLEncoder.encode("ver","UTF-8") + "=" + URLEncoder.encode("1.1", "UTF-8")); /*버전별 상세 결과 참고*/
         URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
+        log.info("한국환경공단_에어코리아_대기오염정보 API");
+        log.info("Response code: " + conn.getResponseCode());
+
         BufferedReader rd;
         if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -134,7 +143,7 @@ public class WeatherController {
         }
         rd.close();
         conn.disconnect();
-        System.out.println(sb.toString());
+//        System.out.println(sb.toString());
 
         JSONObject result = (JSONObject) new JSONParser().parse(sb.toString());
         JSONObject response = (JSONObject) result.get("response");
@@ -143,10 +152,13 @@ public class WeatherController {
         List<JSONObject> itemList = items;
         Dust dust = null;
         for (JSONObject jsonObject : itemList) {
-            System.out.println(jsonObject.get("stationName").toString());
+            System.out.println("jsonObject.get(\"stationName\").toString() = " + jsonObject.get("stationName").toString());
             if(jsonObject.get("stationName").toString().equals("용산구")){
-                dust = new Dust(Integer.parseInt(jsonObject.get("pm25Grade").toString()),
+                Integer pm25Grade = Integer.parseInt(jsonObject.get("pm25Grade").toString());
+                Integer pm10Grade = Integer.parseInt(jsonObject.get("pm10Grade").toString());
+                Integer badderDust = Math.max(Integer.parseInt(jsonObject.get("pm25Grade").toString()),
                         Integer.parseInt(jsonObject.get("pm10Grade").toString()));
+                dust = new Dust(pm10Grade, pm25Grade, badderDust);
                 StringBuilder out = new StringBuilder();
                 out.append("초미세먼지 : "+jsonObject.get("pm25Grade")+" ");
                 out.append("미세먼지 : "+jsonObject.get("pm10Grade")+"\n");
@@ -158,17 +170,10 @@ public class WeatherController {
         return Optional.ofNullable(dust);
     }
 
-    @GetMapping("/api/v1/sunriseset")
-    public SunRiseSunSet updateSunRiseSunSet() throws IOException, JDOMException {
-        //트랜잭션
-        LocalDate localDate = LocalDate.now();
-        SunRiseSunSet sunRiseSunSet = requestDateSunRiseSunSet(localDate.format(DateTimeFormatter.BASIC_ISO_DATE));
-        localDate = localDate.plusDays(1L);
-        sunRiseSunSet.updateTomorrowSunRise(requestDateSunRiseSunSet(localDate.format(DateTimeFormatter.BASIC_ISO_DATE)).getTodaySunRise());
-        return sunRiseSunSet;
-    }
+    public SunMoonRiseSet requestSunMoonRiseSet() throws IOException, JDOMException {
+        LocalDate currentDate = LocalDate.now();
+        String date = currentDate.format(DateTimeFormatter.BASIC_ISO_DATE);
 
-    public SunRiseSunSet requestDateSunRiseSunSet(String date) throws IOException, JDOMException {
         StringBuilder urlBuilder = new StringBuilder("http://apis.data.go.kr/B090041/openapi/service/RiseSetInfoService/getAreaRiseSetInfo"); /*URL*/
         urlBuilder.append("?" + URLEncoder.encode("serviceKey","UTF-8") + "=" + riseSetApiKey); /*Service Key*/
         urlBuilder.append("&" + URLEncoder.encode("locdate","UTF-8") + "=" + URLEncoder.encode(date, "UTF-8")); /*날짜*/
@@ -177,7 +182,8 @@ public class WeatherController {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
+        log.info("한국천문연구원_출몰시각 정보 API");
+        log.info("Response code: " + conn.getResponseCode());
 
         SAXBuilder builder = new SAXBuilder();
         Document document = builder.build(conn.getInputStream());
@@ -189,16 +195,19 @@ public class WeatherController {
 
         String sunRise = item.get(0).getChild("sunrise").getText().strip();
         String sunSet = item.get(0).getChild("sunset").getText().strip();
+        String moonRise = item.get(0).getChild("moonrise").getText().strip();
+        sunRise = sunRise.substring(0,2) + ":" + sunRise.substring(2);
+        sunSet = sunSet.substring(0,2) + ":" + sunSet.substring(2);
+        moonRise = moonRise.substring(0,2) + ":" + moonRise.substring(2);
 
-        System.out.println("sunrise: " + sunRise);
-        System.out.println("sunrise: " + sunSet);
+
+        System.out.println("Date: " + date+ " sunrise: " + sunRise + " sunset: " + sunSet + " moonRise: " + moonRise);
 
         conn.disconnect();
-        return new SunRiseSunSet(sunRise, sunSet);
+        return new SunMoonRiseSet(sunRise, sunSet, moonRise);
     }
 
-    @GetMapping("/api/v1/temperature")
-    public Optional<Double> updateTemperature() throws IOException, ParseException{
+    public Optional<Double> requestTemperature() throws IOException, ParseException{
         LocalDateTime currentTime = LocalDateTime.now();
         if(currentTime.getMinute()<30) currentTime = currentTime.minusHours(1);
         String date = currentTime.format(DateTimeFormatter.BASIC_ISO_DATE);
@@ -217,7 +226,9 @@ public class WeatherController {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
+        log.info("기상청_단기예보 ((구)_동네예보) 조회서비스 API");
+        log.info("Response code: " + conn.getResponseCode());
+
         BufferedReader rd;
         if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -231,7 +242,7 @@ public class WeatherController {
         }
         rd.close();
         conn.disconnect();
-        System.out.println(sb.toString());
+//        System.out.println(sb.toString());
 
         JSONObject result = (JSONObject) new JSONParser().parse(sb.toString());
         JSONObject response = (JSONObject) result.get("response");
@@ -252,5 +263,4 @@ public class WeatherController {
         }
         return Optional.ofNullable(temperature);
     }
-
 }

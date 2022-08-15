@@ -10,8 +10,8 @@ import javax.persistence.Embeddable;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Dust {
-    private int dust10Grade;
-    private int dust25Grade;
-    private int badderDustGrade;
+public class SunMoonRiseSet {
+    private String SunRise;
+    private String SunSet;
+    private String moonRise;
 }
