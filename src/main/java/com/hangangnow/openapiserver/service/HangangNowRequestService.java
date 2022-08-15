@@ -154,8 +154,11 @@ public class HangangNowRequestService {
         for (JSONObject jsonObject : itemList) {
             System.out.println("jsonObject.get(\"stationName\").toString() = " + jsonObject.get("stationName").toString());
             if(jsonObject.get("stationName").toString().equals("용산구")){
-                dust = new Dust(Integer.parseInt(jsonObject.get("pm25Grade").toString()),
+                Integer pm25Grade = Integer.parseInt(jsonObject.get("pm25Grade").toString());
+                Integer pm10Grade = Integer.parseInt(jsonObject.get("pm10Grade").toString());
+                Integer badderDust = Math.max(Integer.parseInt(jsonObject.get("pm25Grade").toString()),
                         Integer.parseInt(jsonObject.get("pm10Grade").toString()));
+                dust = new Dust(pm10Grade, pm25Grade, badderDust);
                 StringBuilder out = new StringBuilder();
                 out.append("초미세먼지 : "+jsonObject.get("pm25Grade")+" ");
                 out.append("미세먼지 : "+jsonObject.get("pm10Grade")+"\n");
