@@ -44,6 +44,7 @@ public class ParkService {
     private final ParkRepository parkRepository;
     private final PhotoRepository photoRepository;
 
+
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestPark()  throws IOException, JDOMException {
@@ -147,6 +148,7 @@ public class ParkService {
             findPark.updatePark(parkRequestDto.getParkName(), local, address, parkRequestDto.getContent(), parkRequestDto.getLastModifiedTime());
         }
     }
+
 
     @Scheduled(cron = "0 5 0 * * *", zone = "Asia/Seoul")
     @Transactional
