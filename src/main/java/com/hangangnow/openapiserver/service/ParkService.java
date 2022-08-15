@@ -41,11 +41,11 @@ public class ParkService {
     @Value("${tourApiKey}")
     private String key;
 
-
     private final ParkRepository parkRepository;
     private final PhotoRepository photoRepository;
 
-//    @Scheduled(cron = "0 0/2 * * * *", zone = "Asia/Seoul")
+
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestPark()  throws IOException, JDOMException {
         LocalDateTime now = LocalDateTime.now();
@@ -76,8 +76,8 @@ public class ParkService {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
-            System.out.println("conn = " + conn);
-            log.info("Response code: " + conn.getResponseCode());
+            log.info("국문관광정보 conn = " + conn);
+//            log.info("Response code: " + conn.getResponseCode());
 
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(conn.getInputStream());
@@ -89,6 +89,15 @@ public class ParkService {
 
             for (Element element : item) {
                 String parkName = element.getChild("title").getText();
+
+                if(contentId.equals("1030763")){
+                    parkName = "뚝섬한강공원";
+                }
+
+                else if(contentId.equals("1059638")){
+                    parkName = "망원한강공원";
+                }
+
                 String addr1 = element.getChild("addr1").getText();
                 String[] addresses = addr1.split("\\s");
                 String si = addresses[0];
@@ -140,7 +149,8 @@ public class ParkService {
         }
     }
 
-//    @Scheduled(cron = "0 0/3 * * * *", zone = "Asia/Seoul")
+
+    @Scheduled(cron = "0 5 0 * * *", zone = "Asia/Seoul")
     @Transactional
     public void requestParkImage() throws IOException, JDOMException {
         LocalDateTime now = LocalDateTime.now();
@@ -169,7 +179,7 @@ public class ParkService {
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Content-type", "application/json");
 
-            log.info("Response code: " + conn.getResponseCode());
+            log.info("이미지 정보 조회 Response code: " + conn.getResponseCode());
 
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(conn.getInputStream());
@@ -192,12 +202,13 @@ public class ParkService {
             conn.disconnect();
         }
 
-        updateParkPhoto(parkPhotoRequestDtos);
+        createParkPhoto(parkPhotoRequestDtos);
     }
 
 
 
     public void createParkPhoto(List<ParkPhotoRequestDto> parkPhotoRequestDtos){
+        photoRepository.deleteAll();
         for (ParkPhotoRequestDto parkPhotoRequestDto : parkPhotoRequestDtos) {
             Park findPark = parkRepository.findByContentId(parkPhotoRequestDto.getContentId());
 
